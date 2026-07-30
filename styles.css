@@ -86,19 +86,44 @@ img {
   object-fit: contain;
 }
 
-.start-prompt {
+.title-fullscreen-button {
   position: absolute;
-  left: 50%;
-  bottom: clamp(0.8rem, 2vh, 1.6rem);
-  transform: translateX(-50%);
-  margin: 0;
-  padding: 0.55rem 1rem;
-  border-radius: 999px;
-  background: rgb(255 247 251 / 86%);
-  box-shadow: var(--shadow);
-  font-family: var(--display);
-  font-size: clamp(0.95rem, 1.7vw, 1.35rem);
-  pointer-events: none;
+  right: clamp(0.55rem, 1vw, 0.9rem);
+  bottom: clamp(0.55rem, 1vw, 0.9rem);
+  z-index: 3;
+
+  width: clamp(1.8rem, 2.7vw, 2.35rem);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+
+  padding: 0.4rem;
+  border: 0;
+  border-radius: 50%;
+
+  background: rgb(255 255 255 / 22%);
+  opacity: 0.32;
+  cursor: pointer;
+
+  transition:
+    opacity 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
+}
+
+.title-fullscreen-button img {
+  width: 100%;
+  height: 100%;
+}
+
+.title-fullscreen-button:hover,
+.title-fullscreen-button:focus-visible {
+  opacity: 0.72;
+  background: rgb(255 255 255 / 55%);
+}
+
+.title-fullscreen-button:active {
+  transform: scale(0.92);
 }
 
 .rules-controls {
@@ -113,36 +138,32 @@ img {
   box-shadow: var(--shadow);
 }
 
-.rules-controls__title {
-  margin: 0 0 0.45rem;
-  font-family: var(--display);
-  font-size: clamp(1rem, 1.7vw, 1.35rem);
+.rules-controls--continue {
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.rules-controls--continue .button {
+  min-width: 9rem;
 }
 
 .team-name-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 0.55rem;
-  align-items: end;
+  grid-template-columns: 1fr 1fr;
 }
 
-.team-name-row label {
-  display: grid;
-  gap: 0.2rem;
-  font-size: 0.78rem;
-  font-weight: 700;
+.team-name-row .button {
+  grid-column: 1 / -1;
 }
 
-.team-name-row input,
-.score-name {
-  width: 100%;
-  min-width: 0;
-  border: 2px solid rgb(97 18 65 / 23%);
-  border-radius: 0.55rem;
-  padding: 0.5rem 0.6rem;
-  background: #fff;
-  color: var(--ink);
-  font-weight: 750;
+.score-card__name {
+  display: block;
+  font-family: var(--display);
+  font-size: clamp(1.1rem, 2vw, 1.75rem);
+  line-height: 1;
+  text-align: center;
 }
 
 .button {

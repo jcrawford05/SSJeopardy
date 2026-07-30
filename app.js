@@ -24,17 +24,20 @@
   let pendingSavedGame = null;
   let toastTimer = null;
 
-  function createInitialState(teamNames = DEFAULT_TEAMS) {
-    return {
-      version: 1,
-      screen: "title",
-      currentClueId: null,
-      answerRevealed: false,
-      selectedTeam: 0,
-      teams: teamNames.map((name) => ({ name, score: 0 })),
-      completedClues: []
-    };
-  }
+  function createInitialState() {
+  return {
+    version: 1,
+    screen: "title",
+    currentClueId: null,
+    answerRevealed: false,
+    selectedTeam: 0,
+    teams: [
+      { name: "Team 1", score: 0 },
+      { name: "Team 2", score: 0 }
+    ],
+    completedClues: []
+  };
+}
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -46,11 +49,11 @@
 
     const validScreens = new Set(["title", "rules", "board", "clue"]);
     const teams = Array.isArray(candidate.teams) && candidate.teams.length === 2
-      ? candidate.teams.map((team, index) => ({
-          name: typeof team.name === "string" && team.name.trim() ? team.name.trim() : DEFAULT_TEAMS[index],
-          score: Number.isFinite(Number(team.score)) ? Number(team.score) : 0
-        }))
-      : fallback.teams;
+  ? candidate.teams.map((team, index) => ({
+      name: DEFAULT_TEAMS[index],
+      score: Number.isFinite(Number(team.score)) ? Number(team.score) : 0
+    }))
+  : fallback.teams;
 
     const completedClues = Array.isArray(candidate.completedClues)
       ? [...new Set(candidate.completedClues.filter((id) => clueIndex.has(id)))]
@@ -176,43 +179,65 @@
   }
 
   function renderTitleScreen() {
-    return `
-      <section class="app-stage image-screen" aria-label="Sarah's Bachelorette Trivia title screen">
-        <button class="image-screen__button" type="button" data-action="show-rules" aria-label="Begin the game">
-          <img class="image-screen__image" src="assets/images/title-screen.png" alt="Sarah's Bachelorette Trivia" />
-        </button>
-        <p class="start-prompt">Click anywhere to begin</p>
-      </section>
-    `;
-  }
+  return `
+    <section class="app-stage image-screen title-screen" aria-label="Sarah's Bachelorette Trivia title screen">
+      <button
+        class="image-screen__button"
+        type="button"
+        data-action="show-rules"
+        aria-label="Begin the game"
+      >
+        <img
+          class="image-screen__image"
+          src="./assets/images/title-screen.png"
+          alt="Sarah's Bachelorette Trivia"
+        />
+      </button>
+
+      <button
+        class="title-fullscreen-button"
+        type="button"
+        data-action="fullscreen"
+        aria-label="Toggle full screen"
+      >
+        <img
+          src="./assets/icons/fullscreen.svg"
+          alt=""
+          aria-hidden="true"
+        />
+      </button>
+    </section>
+  `;
+}
 
   function renderRulesScreen() {
-    return `
-      <section class="app-stage image-screen" aria-label="Game rules">
-        <img class="image-screen__image" src="assets/images/rules-screen.png" alt="Rules for Sarah's Bachelorette Trivia" />
-        <div class="rules-controls">
-          <p class="rules-controls__title">Choose team names</p>
-          <div class="team-name-row">
-            ${state.teams.map((team, index) => `
-              <label>
-                Team ${index + 1}
-                <input type="text" maxlength="28" value="${escapeHtml(team.name)}" data-team-name="${index}" autocomplete="off" />
-              </label>
-            `).join("")}
-            <button class="button button-primary" type="button" data-action="start-board">Continue</button>
-          </div>
-        </div>
-      </section>
-    `;
-  }
+  return `
+    <section class="app-stage image-screen" aria-label="Game rules">
+      <img
+        class="image-screen__image"
+        src="./assets/images/rules-screen.png"
+        alt="Rules for Sarah's Bachelorette Trivia"
+      />
+
+      <div class="rules-controls rules-controls--continue">
+        <button
+          class="button button-primary"
+          type="button"
+          data-action="start-board"
+        >
+          Continue
+        </button>
+      </div>
+    </section>
+  `;
+}
 
   function renderScoreCard(team, index) {
     const selectedClass = state.selectedTeam === index ? " is-selected" : "";
     return `
       <section class="score-card${selectedClass}" data-select-team="${index}" aria-label="${escapeHtml(team.name)} score ${team.score}">
         <div class="score-card__identity">
-          <span class="score-card__label">Team ${index + 1}</span>
-          <input class="score-name" type="text" maxlength="28" value="${escapeHtml(team.name)}" data-team-name="${index}" aria-label="Team ${index + 1} name" />
+          <span class="score-card__name">${escapeHtml(team.name)}</span>
         </div>
         <div>
           <div class="score-card__score">${team.score}</div>
@@ -474,15 +499,6 @@
     }, `${teamName} ${delta > 0 ? "+" : ""}${delta}`);
   }
 
-  function updateTeamName(index, value) {
-    if (![0, 1].includes(index)) return;
-    const name = value.trim() || DEFAULT_TEAMS[index];
-    if (state.teams[index].name === name) return;
-    commit((draft) => {
-      draft.teams[index].name = name;
-    });
-  }
-
   async function toggleFullscreen() {
     try {
       if (!document.fullscreenElement) {
@@ -505,14 +521,13 @@
     }
   }
 
-  function resetGame() {
-    const teamNames = state.teams.map((team) => team.name);
-    state = createInitialState(teamNames);
-    history = [];
-    clearSavedGame();
-    render();
-    showToast("Game reset.");
-  }
+function resetGame() {
+  state = createInitialState();
+  history = [];
+  clearSavedGame();
+  render();
+  showToast("Game reset.");
+}
 
   function returnToTitle() {
     commit((draft) => {
@@ -592,12 +607,6 @@
       default:
         break;
     }
-  });
-
-  app.addEventListener("change", (event) => {
-    const input = event.target.closest("[data-team-name]");
-    if (!input) return;
-    updateTeamName(Number(input.dataset.teamName), input.value);
   });
 
   document.addEventListener("keydown", (event) => {
