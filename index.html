@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f9c9e2" />
+    <meta name="description" content="Sarah's Bachelorette Trivia game" />
+    <title>Sarah’s Bachelorette Trivia</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Chewy&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://use.typekit.net/shk6rja.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main id="app" aria-live="polite"></main>
+
+    <dialog id="resume-dialog" class="game-dialog" aria-labelledby="resume-title">
+      <form method="dialog">
+        <h2 id="resume-title">A game in progress was found.</h2>
+        <p>Resume the saved game or start over with a clean board.</p>
+        <div class="dialog-actions">
+          <button value="start-over" class="button button-secondary">Start Over</button>
+          <button value="resume" class="button button-primary">Resume Game</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="reset-dialog" class="game-dialog" aria-labelledby="reset-title">
+      <form method="dialog">
+        <h2 id="reset-title">Reset the entire game?</h2>
+        <p>This will clear all scores and used clues.</p>
+        <div class="dialog-actions">
+          <button value="cancel" class="button button-secondary">Cancel</button>
+          <button value="reset" class="button button-danger">Reset Game</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="game-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
