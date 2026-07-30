@@ -209,14 +209,6 @@ img {
   gap: clamp(0.42rem, 0.8vw, 0.75rem);
 }
 
-.game-topbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: clamp(0.45rem, 1vw, 0.9rem);
-  min-height: clamp(4.2rem, 11vh, 6.5rem);
-}
-
 .score-card {
   display: grid;
   grid-template-columns: minmax(6rem, 1fr) auto;
@@ -230,6 +222,14 @@ img {
   background: rgb(255 247 251 / 88%);
   box-shadow: 0 0.2rem 0.65rem rgb(84 12 49 / 12%);
   cursor: pointer;
+}
+
+.score-bar .score-card__name {
+  text-align: left;
+}
+
+.score-bar .score-card__score {
+  font-size: clamp(1.8rem, 3.5vw, 3rem);
 }
 
 .score-card.is-selected {
@@ -259,6 +259,20 @@ img {
   line-height: 0.9;
 }
 
+.score-bar {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(0.45rem, 1vw, 0.8rem);
+  width: 100%;
+  min-height: clamp(4rem, 9vh, 5.4rem);
+}
+
+.score-bar .score-card {
+  height: auto;
+  min-height: 0;
+}
+
 .score-adjusters {
   display: grid;
   grid-template-columns: 2.3rem 2.3rem;
@@ -280,35 +294,130 @@ img {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  gap: 0.2rem;
+}
+
+.corner-controls {
+  position: absolute;
+  z-index: 8;
+  right: clamp(0.45rem, 0.8vw, 0.75rem);
+  bottom: clamp(4.8rem, 10vh, 6.2rem);
+  padding: 0.22rem;
+  border-radius: 999px;
+  background: rgb(255 247 251 / 45%);
+  opacity: 0.5;
+  transition:
+    opacity 140ms ease,
+    background 140ms ease;
+}
+
+.corner-controls:hover,
+.corner-controls:focus-within {
+  opacity: 1;
+  background: rgb(255 247 251 / 88%);
+}
+
+.tool-menu {
+  position: absolute;
+  z-index: 12;
+  top: clamp(0.45rem, 0.8vw, 0.75rem);
+  right: clamp(0.45rem, 0.8vw, 0.75rem);
+}
+
+.tool-menu__toggle {
+  width: clamp(1.8rem, 2.5vw, 2.25rem);
+  height: clamp(1.8rem, 2.5vw, 2.25rem);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.22rem;
+
+  padding: 0.4rem;
+  border-radius: 50%;
+
+  background: rgb(255 247 251 / 38%);
+  opacity: 0.5;
+  cursor: pointer;
+  list-style: none;
+
+  transition:
+    opacity 140ms ease,
+    background 140ms ease;
+}
+
+.tool-menu__toggle::-webkit-details-marker {
+  display: none;
+}
+
+.tool-menu__toggle::marker {
+  display: none;
+  content: "";
+}
+
+.tool-menu__toggle:hover,
+.tool-menu__toggle:focus-visible,
+.tool-menu[open] .tool-menu__toggle {
+  opacity: 1;
+  background: rgb(255 247 251 / 90%);
+}
+
+.menu-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  border-radius: 999px;
+  background: #42142f;
+}
+
+.tool-menu__panel {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  padding: 0.3rem;
+  border: 1px solid rgb(90 20 60 / 12%);
+  border-radius: 0.7rem;
+
+  background: rgb(255 247 251 / 94%);
+  box-shadow: 0 0.4rem 1rem rgb(70 15 45 / 18%);
+  backdrop-filter: blur(5px);
 }
 
 .icon-button {
-  width: clamp(2.7rem, 4.2vw, 3.6rem);
-  aspect-ratio: 1;
+  width: 1.9rem;
+  height: 1.9rem;
+
   display: grid;
   place-items: center;
-  padding: 0.65rem;
+
+  padding: 0.35rem;
   border: 0;
-  border-radius: 50%;
-  background: rgb(255 247 251 / 90%);
-  box-shadow: 0 0.2rem 0.65rem rgb(84 12 49 / 13%);
+  border-radius: 0.45rem;
+
+  background: transparent;
+  box-shadow: none;
   cursor: pointer;
+}
+
+.icon-button:hover,
+.icon-button:focus-visible {
+  background: rgb(246 187 215 / 75%);
+}
+
+.icon-button:disabled {
+  opacity: 0.25;
+  cursor: default;
 }
 
 .icon-button img {
   width: 100%;
   height: 100%;
-}
-
-.progress-pill {
-  padding: 0.45rem 0.75rem;
-  border-radius: 999px;
-  background: rgb(255 247 251 / 88%);
-  font-size: clamp(0.7rem, 1vw, 0.85rem);
-  font-weight: 850;
-  white-space: nowrap;
 }
 
 .board-grid {
@@ -544,6 +653,10 @@ img {
   cursor: pointer;
 }
 
+.clue-topbar {
+  padding-right: clamp(2.6rem, 4vw, 3.4rem);
+}
+
 .score-action.correct {
   background: #d2f0d8;
 }
@@ -627,15 +740,6 @@ img {
 @media (max-width: 820px), (max-height: 650px) {
   .app-stage {
     width: 100vw;
-  }
-
-  .game-topbar {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .game-controls {
-    grid-column: 1 / -1;
-    order: 3;
   }
 
   .board-grid {

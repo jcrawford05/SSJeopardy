@@ -242,26 +242,97 @@
         <div>
           <div class="score-card__score">${team.score}</div>
           <div class="score-adjusters" aria-label="Manual score adjustment">
-            <button type="button" data-adjust-score="-100" data-team="${index}" aria-label="Subtract 100 from ${escapeHtml(team.name)}">−</button>
-            <button type="button" data-adjust-score="100" data-team="${index}" aria-label="Add 100 to ${escapeHtml(team.name)}">+</button>
+            <button
+              type="button"
+              data-adjust-score="-50"
+              data-team="${index}"
+              aria-label="Subtract 50 from ${escapeHtml(team.name)}"
+            >
+              −
+            </button>
+
+            <button
+              type="button"
+              data-adjust-score="50"
+              data-team="${index}"
+              aria-label="Add 50 to ${escapeHtml(team.name)}"
+            >
+              +
+            </button>
           </div>
         </div>
       </section>
     `;
   }
 
-  function renderGlobalControls({ includeBoard = false, includeHome = false } = {}) {
-    return `
-      <nav class="game-controls" aria-label="Game controls">
-        ${includeBoard ? iconButton("home", "Return to board and complete clue", "return-board") : ""}
-        ${includeHome ? iconButton("title", "Return to title screen", "return-title") : ""}
-        ${iconButton("undo", "Undo last action", "undo", history.length ? "" : "disabled")}
-        ${iconButton("fullscreen", document.fullscreenElement ? "Exit full screen" : "Enter full screen", "fullscreen")}
-        ${iconButton("reset", "Reset game", "reset")}
-        <span class="progress-pill">${state.completedClues.length} / ${clueIndex.size} clues</span>
+  function renderScoreBar() {
+  return `
+    <footer class="score-bar" aria-label="Team scores">
+      ${renderScoreCard(state.teams[0], 0)}
+      ${renderScoreCard(state.teams[1], 1)}
+    </footer>
+  `;
+}
+
+function renderGlobalControls({
+  includeBoard = false,
+  includeHome = false
+} = {}) {
+  return `
+    <details class="tool-menu">
+      <summary
+        class="tool-menu__toggle"
+        aria-label="Open game controls"
+        title="Game controls"
+      >
+        <span class="menu-line"></span>
+        <span class="menu-line"></span>
+        <span class="menu-line"></span>
+      </summary>
+
+      <nav class="tool-menu__panel" aria-label="Game controls">
+        ${includeBoard
+          ? iconButton(
+              "home",
+              "Return to board and complete clue",
+              "return-board"
+            )
+          : ""
+        }
+
+        ${includeHome
+          ? iconButton(
+              "title",
+              "Return to title screen",
+              "return-title"
+            )
+          : ""
+        }
+
+        ${iconButton(
+          "undo",
+          "Undo last action",
+          "undo",
+          history.length ? "" : "disabled"
+        )}
+
+        ${iconButton(
+          "fullscreen",
+          document.fullscreenElement
+            ? "Exit full screen"
+            : "Enter full screen",
+          "fullscreen"
+        )}
+
+        ${iconButton(
+          "reset",
+          "Reset game",
+          "reset"
+        )}
       </nav>
-    `;
-  }
+    </details>
+  `;
+}
 
   function renderBoardScreen() {
     const tiles = [];
@@ -292,12 +363,14 @@
     const allComplete = state.completedClues.length === clueIndex.size;
     return `
       <section class="app-stage board-screen" aria-label="Trivia game board">
-        <header class="game-topbar">
-          ${renderScoreCard(state.teams[0], 0)}
-          ${renderGlobalControls()}
-          ${renderScoreCard(state.teams[1], 1)}
-        </header>
-        <div class="board-grid">${tiles.join("")}</div>
+        <div class="board-grid">
+          ${tiles.join("")}
+        </div>
+
+        ${renderGlobalControls()}
+
+        ${renderScoreBar()}
+
         ${allComplete ? renderEndBanner() : ""}
       </section>
     `;
@@ -336,25 +409,41 @@
       : clue.questionImage;
     const hasImage = Boolean(image);
 
-    return `
-      <section class="app-stage clue-screen" aria-label="${escapeHtml(category.name)} for ${clue.value} points">
-        <header class="clue-topbar">
-          <div class="clue-heading">${escapeHtml(category.name)} <strong>— ${clue.value}</strong></div>
-          ${renderGlobalControls({ includeBoard: true, includeHome: true })}
-        </header>
-        <div class="clue-layout">
-          <div class="clue-content${hasImage ? " has-image" : ""}">
-            ${hasImage ? `
-              <div class="clue-image-wrap">
-                <img class="clue-image" src="${escapeHtml(image)}" alt="Visual clue for ${escapeHtml(category.name)}" />
-              </div>
-            ` : ""}
-            ${renderClueCopy(clue)}
-          </div>
-          ${renderClueActions(clue)}
+  return `
+    <section class="app-stage clue-screen" aria-label="${escapeHtml(category.name)} for ${clue.value} points">
+      <header class="clue-topbar">
+        <div class="clue-heading">
+          ${escapeHtml(category.name)}
+          <strong>— ${clue.value}</strong>
         </div>
-      </section>
-    `;
+      </header>
+
+      <div class="clue-layout">
+        <div class="clue-content${hasImage ? " has-image" : ""}">
+          ${hasImage ? `
+            <div class="clue-image-wrap">
+              <img
+                class="clue-image"
+                src="${escapeHtml(image)}"
+                alt="Visual clue for ${escapeHtml(category.name)}"
+              />
+            </div>
+          ` : ""}
+
+          ${renderClueCopy(clue)}
+        </div>
+
+        ${renderClueActions(clue)}
+      </div>
+
+      ${renderGlobalControls({
+        includeBoard: true,
+        includeHome: true
+      })}
+
+      ${renderScoreBar()}
+    </section>
+  ;`
   }
 
   function renderClueCopy(clue) {
@@ -485,18 +574,21 @@
 
   function selectTeam(index) {
     if (![0, 1].includes(index) || state.selectedTeam === index) return;
+
     commit((draft) => {
       draft.selectedTeam = index;
-    }, `${state.teams[index].name} selected.`);
+    });
   }
 
   function adjustScore(teamIndex, delta) {
-    if (![0, 1].includes(teamIndex) || !Number.isFinite(delta) || delta === 0) return;
-    const teamName = state.teams[teamIndex].name;
+    if (![0, 1].includes(teamIndex) || !Number.isFinite(delta) || delta === 0) {
+      return;
+    }
+
     commit((draft) => {
       draft.teams[teamIndex].score += delta;
       draft.selectedTeam = teamIndex;
-    }, `${teamName} ${delta > 0 ? "+" : ""}${delta}`);
+    });
   }
 
   async function toggleFullscreen() {
@@ -574,6 +666,11 @@ function resetGame() {
 
     const actionElement = event.target.closest("[data-action]");
     if (!actionElement || actionElement.disabled) return;
+    const openToolMenu = actionElement.closest(".tool-menu");
+
+    if (openToolMenu) {
+      openToolMenu.removeAttribute("open");
+    }
 
     switch (actionElement.dataset.action) {
       case "show-rules":
