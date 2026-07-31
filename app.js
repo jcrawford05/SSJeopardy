@@ -459,7 +459,6 @@ function renderGlobalControls({
     const countdownClass = clue.answerType === "countdown" ? " countdown-answer" : "";
     return `
       <div class="clue-copy is-answer${countdownClass}">
-        <span class="answer-label">Answer</span>
         <div>${escapeHtml(answer)}</div>
         ${clue.answerNote ? `<p class="answer-note">${escapeHtml(clue.answerNote)}</p>` : ""}
       </div>
@@ -468,10 +467,37 @@ function renderGlobalControls({
 
   function renderClueActions(clue) {
     if (clue.answerType === "superlative") {
+      const halfPoints = clue.value / 2;
+
       return `
         <div class="clue-actions">
-          <button class="button button-primary reveal-button" type="button" data-action="return-board">Complete Clue &amp; Return to Board</button>
-          <p class="keyboard-hint">Category #2 is the exception: this clue has no fixed answer slide.</p>
+          <div class="scoring-group" aria-label="Score this superlative clue">
+            ${state.teams.map((team, index) => {
+              const otherTeam = state.teams[index === 0 ? 1 : 0];
+
+              return `
+                <button
+                  class="score-action correct"
+                  type="button"
+                  data-superlative-team="${index}"
+                  data-superlative-value="${clue.value}"
+                >
+                  ${escapeHtml(team.name)} Correct
+                  (+${clue.value}; ${escapeHtml(otherTeam.name)} +${halfPoints})
+                </button>
+              `;
+            }).join("")}
+          </div>
+
+          <div class="clue-footer-row">
+            <button
+              class="button button-primary"
+              type="button"
+              data-action="return-board"
+            >
+              Return to Board
+            </button>
+          </div>
         </div>
       `;
     }
@@ -479,8 +505,13 @@ function renderGlobalControls({
     if (!state.answerRevealed) {
       return `
         <div class="clue-actions">
-          <button class="button button-primary reveal-button" type="button" data-action="reveal-answer">Reveal Answer</button>
-          <p class="keyboard-hint">Space reveals the answer · B returns to the board</p>
+          <button
+            class="button button-primary reveal-button"
+            type="button"
+            data-action="reveal-answer"
+          >
+            Reveal Answer
+          </button>
         </div>
       `;
     }
@@ -489,18 +520,19 @@ function renderGlobalControls({
       <div class="clue-actions">
         <div class="scoring-group" aria-label="Score this clue">
           ${state.teams.map((team, index) => `
-            <button class="score-action correct" type="button" data-score-team="${index}" data-score-delta="${clue.value}">
+            <button
+              class="score-action correct"
+              type="button"
+              data-score-team="${index}"
+              data-score-delta="${clue.value}"
+            >
               ${escapeHtml(team.name)} Correct (+${clue.value})
-            </button>
-            <button class="score-action incorrect" type="button" data-score-team="${index}" data-score-delta="-${clue.value}">
-              ${escapeHtml(team.name)} Incorrect (−${clue.value})
             </button>
           `).join("")}
         </div>
         <div class="clue-footer-row">
           <button class="button button-primary" type="button" data-action="return-board">Return to Board</button>
         </div>
-        <p class="keyboard-hint">Select a team with 1 or 2 · + / − applies this clue’s value · Ctrl+Z undoes</p>
       </div>
     `;
   }
@@ -591,6 +623,25 @@ function renderGlobalControls({
     });
   }
 
+  function scoreSuperlative(winningTeamIndex, clueValue) {
+    if (
+      ![0, 1].includes(winningTeamIndex) ||
+      !Number.isFinite(clueValue) ||
+      clueValue <= 0
+    ) {
+      return;
+    }
+
+    const otherTeamIndex = winningTeamIndex === 0 ? 1 : 0;
+    const halfPoints = clueValue / 2;
+
+    commit((draft) => {
+      draft.teams[winningTeamIndex].score += clueValue;
+      draft.teams[otherTeamIndex].score += halfPoints;
+      draft.selectedTeam = winningTeamIndex;
+    });
+  }
+
   async function toggleFullscreen() {
     try {
       if (!document.fullscreenElement) {
@@ -643,6 +694,16 @@ function resetGame() {
     if (scoreAdjuster) {
       event.stopPropagation();
       adjustScore(Number(scoreAdjuster.dataset.team), Number(scoreAdjuster.dataset.adjustScore));
+      return;
+    }
+
+    const superlativeAction = event.target.closest("[data-superlative-team]");
+    if (superlativeAction) {
+      scoreSuperlative(
+        Number(superlativeAction.dataset.superlativeTeam),
+        Number(superlativeAction.dataset.superlativeValue)
+      );
+
       return;
     }
 
